@@ -127,7 +127,9 @@ Die Prüfungen bis jetzt liefen **ohne** Airtable (sie testen die Logik). Jetzt 
 🟦 **Claude macht das:**
 > ⌨️ **Kopier das an Claude:** „Führ den Live-Test gegen meine echte Base aus (erst nur lesen), und danach einmal mit `--write-cycle`."
 
-Du siehst eine Liste mit **Häkchen** ✅: Verbindung steht, alle 8 Felder da, und ein Test-Eintrag wird angelegt, korrekt bewertet und wieder gelöscht. **Wenn das grün ist, hast du Zugriff.** 🎉
+Du siehst eine Liste mit **Häkchen** ✅: Verbindung steht, alle 8 Felder da, und ein Test-Eintrag wird angelegt, korrekt bewertet und wieder gelöscht. Am Ende eine **Scorecard** mit PASS/FAIL je Kriterium. **Wenn das grün ist, hast du Zugriff.** 🎉
+
+Danach trägt Claude die Ergebnisse in `eval.md` ein — jedes Kriterium von **FAIL auf PASS**, wo der Test grün war. So ist deine Abnahme sichtbar abgehakt, statt nur im Terminal vorbeizurauschen.
 
 > **🔒 Kurz zur Sicherheit:** In den Ausgaben darf der Token **nie** auftauchen. Falls du selbst mal etwas testest: keine „ausführliche" Ausgabe (`-v`) bei solchen Befehlen — da kann der Schlüssel durchrutschen.
 
