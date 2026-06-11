@@ -1,0 +1,19 @@
+# Secrets — NIEMALS committen
+.env
+**/.env
+*.pat
+
+# Python venv & Caches
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Lokal / Instructor — nicht im Teilnehmer-Paket
+.claude/settings.local.json
+VIDEO_RUNBOOK.md
