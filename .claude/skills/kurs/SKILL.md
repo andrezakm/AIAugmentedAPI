@@ -72,6 +72,8 @@ Zwei Dinge richtest **nur du** ein: eine **leere** Airtable-Base und einen Schl�
    Es ist der **erste Teil nach `airtable.com/`**, beginnt mit **`app`** und ist 17 Zeichen lang. Kopier **nur** diesen `app…`-Block — bis zum nächsten `/`, also **ohne** das `tbl…`/`viw…` dahinter.
    *(Siehst du sie nicht? **Help (?) → API documentation** öffnen — ganz oben steht „The ID of this base is `app…`".)*
 
+> **Und die Tabelle?** Deine neue Base bringt eine leere Standard-Tabelle **„Table 1"** mit — **lass sie einfach in Ruhe** (nicht umbenennen). Die richtige Tabelle heißt **`Roadmap`** und legt **Claude** gleich für dich an (Schritt 6) — du musst keine Tabelle anlegen oder benennen. „Table 1" kannst du am Ende löschen, wenn du aufräumen willst.
+
 ### b) Erstelle deinen Token (PAT)
 
 Drei Begriffe, einfach erklärt:

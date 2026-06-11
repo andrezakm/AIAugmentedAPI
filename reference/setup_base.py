@@ -62,12 +62,27 @@ def main() -> int:
     if r.status_code != 200:
         sys.exit(f"FEHLER beim Lesen der Tabellen: {r.status_code} {r.text[:200]}")
 
-    existing = {t["name"] for t in r.json().get("tables", [])}
-    if TABLE in existing:
-        print(f"OK: Tabelle '{TABLE}' existiert bereits — nichts zu tun.")
+    tables = r.json().get("tables", [])
+    found = next((t for t in tables if t["name"] == TABLE), None)
+    if found:
+        # Tabelle existiert — fehlende Felder ergaenzen (robust, falls jemand eine
+        # vorhandene oder umbenannte Tabelle nutzt, statt Claude eine neue anlegen zu lassen).
+        have = {f["name"] for f in found.get("fields", [])}
+        missing = [f for f in FIELDS if f["name"] not in have]
+        if not missing:
+            print(f"OK: Tabelle '{TABLE}' hat schon alle {len(FIELDS)} Felder — nichts zu tun.")
+            return 0
+        url = f"{META}/{found['id']}/fields"
+        for f in missing:
+            rr = requests.post(url, headers=HEADERS, json=f, timeout=30)
+            if rr.status_code not in (200, 201):
+                sys.exit(f"FEHLER beim Feld '{f['name']}': {rr.status_code} {rr.text[:200]}")
+        print(f"OK: Tabelle '{TABLE}' um {len(missing)} Feld(er) ergaenzt:")
+        for f in missing:
+            print(f"   + {f['name']}")
         return 0
 
-    # Anlegen.
+    # Tabelle neu anlegen.
     r = requests.post(META, headers=HEADERS, json={"name": TABLE, "fields": FIELDS}, timeout=30)
     if r.status_code not in (200, 201):
         sys.exit(f"FEHLER beim Anlegen: {r.status_code} {r.text[:300]}")
