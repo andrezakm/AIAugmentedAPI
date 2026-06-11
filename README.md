@@ -1,140 +1,92 @@
-# Handover — Airtable Roadmap Store Access
+# AI Augmented API — Zugriff auf ein System aus einer Spec bauen
 
-**Purpose.** Everything another project needs to reproduce the Airtable access used in the
-NeoEmployee PM Workflow: read feature suggestions from a roadmap, write back AI verdicts
-(score / lane / status / feedback), and read the whole portfolio for analysis. Self-
-contained — drop this folder into the new project and go.
+Ein Modul aus dem Kurs **AI Augmented PM** (überproduct). Es beantwortet die Frage, die jeder zuerst hat:
 
-**Author's note.** This is a clean re-packaging of a working integration. The reference
-client below is not pseudo-code; it runs against the live base and fixes two latent bugs
-in the original (see *Gotchas*). Start with this README, then read the specs as needed.
+> **„Wie bekomme ich Zugriff auf ein System, für das es keinen fertigen Connector (MCP) gibt?"**
 
----
+Beispiel: **Airtable**. Es gibt keinen Ein-Klick-Connector — aber Airtable hat eine API. Wir bauen den Zugang durch diese Tür: **test-first, aus einer Spec**. Am Ende kann ein Skript für dich aus deiner Airtable-Tabelle lesen und hineinschreiben — und du weißt, wo dein API-Key hingehört (und wo nicht).
 
-## What you're receiving
+Du musst nicht programmieren. Das meiste macht Claude; du dirigierst, prüfst ab und sicherst den Schlüssel.
 
-```
-handover/
-├── README.md                  ← you are here (start)
-├── AIRTABLE_ROADMAP_SPEC.md   ← the WHY: requirements-driven spec (read first for understanding)
-├── AIRTABLE_ACCESS_SPEC.md    ← the HOW: wire-level reference (endpoints, JSON, retry contract)
-├── .env.example               ← config template (copy to .env, add your PAT)
-└── reference/
-    ├── airtable_client.py     ← drop-in client implementing the whole contract
-    ├── smoke_test.py          ← runnable acceptance checks (spec §11)
-    └── requirements.txt        ← requests + python-dotenv
-```
+## So startest du
 
-Read order: **this README** → [AIRTABLE_ROADMAP_SPEC.md](AIRTABLE_ROADMAP_SPEC.md) (the model
-and the *why*) → [AIRTABLE_ACCESS_SPEC.md](AIRTABLE_ACCESS_SPEC.md) (only when you need exact
-wire detail) → [`reference/airtable_client.py`](reference/airtable_client.py) (the code).
+Öffne diesen Ordner in **Claude Code** und sag:
 
----
+> **„starte den Kurs"**
 
-## 5-minute quickstart
+Der Kurs (`/kurs`) führt dich in **8 Schritten** durch alles — auch wie du dir einen Airtable-Token besorgst (Schritt 3) und sicher hinterlegst.
+
+## Voraussetzungen
+
+- **Claude Code**
+- **Python 3** (`python3 --version`)
+- Für den Live-Teil: ein **Airtable-Account** + ein **Personal Access Token (PAT)**. Ohne Token kommst du trotzdem durch die ersten Schritte — die Offline-Tests brauchen kein Airtable.
+
+## Schnellstart (5 Minuten)
 
 ```bash
-cd handover
-cp .env.example .env                 # then edit .env and paste your AIRTABLE_PAT
+cp .env.example .env     # dann .env öffnen und deinen AIRTABLE_PAT eintragen
+                         # (Kurs Schritt 3 erklärt, wie du den Token bekommst)
 
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r reference/requirements.txt
+pip install -r reference/requirements.txt pytest
 
-# read-only acceptance run (safe against the live base):
+# Offline-Tests (kein Airtable, kein Token nötig):
+pytest reference/ -q
+
+# Live-Check gegen deine echte Base (nur lesen):
 python reference/smoke_test.py
-
-# include a create→update→delete round-trip (uses a temp, self-deleting record):
+# inkl. einmal anlegen → prüfen → löschen (selbst-aufräumend):
 python reference/smoke_test.py --write-cycle
 ```
 
-Then in your own code:
+## Was drin ist
 
-```python
-import sys; sys.path.insert(0, "reference")
-from airtable_client import AirtableRoadmap
+| Datei / Ordner | Was es ist |
+|---|---|
+| `AIRTABLE_ROADMAP_SPEC.md` | **Die Spec** — was der Zugriff können muss (das Warum). |
+| `AIRTABLE_ACCESS_SPEC.md` | Technisches Beiblatt — Endpoints, JSON, Retry-Vertrag (das Wie). |
+| `eval.md` | **Die Eval** — die Abnahmekriterien (wann es gut ist). |
+| `reference/` | **Was wir gebaut haben** — fertiger Client + Tests, zum Studieren und Vergleichen. |
+| `build/` | Dein **Bau-Ordner** — hier entsteht im Kurs dein eigener Client (am Anfang leer). |
+| `.env.example` | Vorlage für deine Zugangsdaten. Kopierst du nach `.env`. |
 
-rm = AirtableRoadmap()                       # reads AIRTABLE_* from .env / env
-for rec in rm.get_new_features():            # the unprocessed queue
-    rm.update_feature(rec["id"], {           # write a verdict back to the same record
-        "Strategy Score": 8.7,               # → Roadmap_Lane auto-set to "Next"
-        "Status": "Approved",
-        "Claude Feedback": "Strong M2 reuse, clean triad…",
-        "Triad Balance": ["Brain", "Organs"],
-        "Horizon": "H1→H2",
-    })
-```
+## Das System, um das es geht
 
----
+Beispiel: eine **Roadmap-Tabelle** in Airtable. Ein Mensch trägt Feature-Ideen ein; eine KI liest sie über die API, bewertet sie und schreibt ihr Urteil zurück. Einfach gesagt: **die Übergabe zwischen Mensch und KI passiert in der Tabelle.**
 
-## The access model in 60 seconds
+Datenmodell (Tabelle `Roadmap`):
 
-- **Transport:** plain HTTPS to the Airtable Web API v0. No SDK.
-- **Auth:** one Personal Access Token (`pat…`) as `Authorization: Bearer …`. Scopes:
-  `data.records:read`, `data.records:write`, and `schema.bases:read` for introspection.
-- **Config:** three env vars — `AIRTABLE_PAT`, `AIRTABLE_BASE_ID`, `AIRTABLE_TABLE_NAME`.
-- **Two URL roots:** `…/v0/{base}/{table}` for rows, `…/v0/meta/bases/{base}/tables` for schema.
-- **Operations:** list-with-filter, list-all (paginated), get-by-id, create (single + batch ≤10),
-  update-by-id (PATCH, partial), delete, health, schema.
-- **The store is the handoff bus:** humans edit rows in Airtable's grid UI; scripts read/write
-  the same rows over the API. `Status` is a state machine; `Claude Feedback` is the dialogue
-  channel between the AI and the human. See the requirements spec for the full rationale.
-
-### Data model (table `Roadmap`)
-
-| Field | Type | Values |
+| Feld | Typ | Werte |
 |---|---|---|
-| Feature Name | singleLineText | primary |
-| Description | richText | markdown |
+| Feature Name | singleLineText | Primärfeld |
+| Description | richText | Markdown |
 | Status | singleSelect | New · Needs More Information · Needs Refinement · Approved · Draft · In Review · UI Ready |
-| Strategy Score | number (1 decimal) | 1.0–10.0 |
-| Roadmap_Lane | singleSelect | Now · Next · Later (derived from score) |
+| Strategy Score | number (1 Dezimal) | 1.0–10.0 |
+| Roadmap_Lane | singleSelect | Now · Next · Later (wird aus dem Score abgeleitet) |
 | Triad Balance | multipleSelects | Brain · Nervous System · Organs |
 | Horizon | singleSelect | H1 · H2 · H3 · H1→H2 · H2→H3 |
-| Claude Feedback | multilineText | AI reasoning / questions back to the human |
+| Claude Feedback | multilineText | Begründung / Rückfragen der KI an den Menschen |
 
----
+## Sicherheit (das Wichtigste)
 
-## Gotchas (the non-obvious stuff that bites)
+- Der **PAT** ist das **einzige Geheimnis**. Er gehört **nur** in `.env` — die steht in `.gitignore` und wird **nie** committet.
+- `.env.example` enthält nur Platzhalter und darf geteilt werden.
+- **Base-ID und Tabellenname sind keine Geheimnisse.**
+- Token versehentlich öffentlich geworden? Auf airtable.com einen neuen erstellen, den alten zurückziehen.
 
-1. **Pagination is mandatory for full reads.** Airtable returns ≤100 rows/page + an `offset`.
-   The original engine read only the first page; `get_all_features()` here loops until done.
-   If you re-implement, don't skip this — it silently truncates once the table passes 100.
-2. **Batch writes cap at 10 records/call.** `create_many()` chunks automatically; a naive
-   loop sending 50 in one POST gets a `422`.
-3. **Rate limit: ~5 requests/sec per base.** Exceed it → `429`. The client retries with
-   backoff and honors `Retry-After`; for big jobs add your own throttle.
-4. **`typecast: true` on every write.** Lets you send select values and scores as plain
-   strings; without it a brand-new option value returns `422 INVALID_MULTIPLE_CHOICE_OPTIONS`.
-5. **Empty fields are omitted from responses.** "Status missing" and "Status = New" are both
-   the unprocessed state. Always read defensively (`fields.get("Status", "")`).
-6. **Lane derivation lives in the client, not Airtable.** Airtable won't compute
-   `Roadmap_Lane` from `Strategy Score`; `update_feature()` does it before sending.
-7. **Use `PATCH`, not `PUT`.** PATCH preserves the human's untouched fields; PUT clears them.
-8. **Secrets:** the PAT is the only secret here — keep it in `.env` (git-ignored), never commit
-   it. Base/table ids are not secret. Rotate the PAT if it ever leaks.
+## Gut zu wissen (die nicht offensichtlichen Stellen)
 
----
+Diese Regeln leben im **Client**, nicht in Airtable — der Kurs baut sie test-first nach:
 
-## Pointing at a different base
+1. **Pagination ist Pflicht.** Airtable liefert max. 100 Zeilen pro Seite plus ein `offset`. Ohne die Schleife siehst du ab Zeile 101 nichts mehr.
+2. **Batch-Writes max. 10 pro Call.** Mehr → `422`. Größere Mengen in Chunks aufteilen.
+3. **Rate-Limit ~5 Requests/Sek.** Drüber → `429`. Der Client wiederholt mit Backoff und beachtet `Retry-After`.
+4. **`typecast: true` bei jedem Write.** Sonst wird ein neuer Select-Wert mit `422` abgelehnt.
+5. **Leere Felder fehlen in der Antwort.** „Status fehlt" und „Status = New" sind beide der unverarbeitete Zustand — immer defensiv lesen (`fields.get("Status", "")`).
+6. **Lane folgt aus dem Score** — im Client gerechnet (≥9 → Now, 8.0–8.9 → Next, <8 → Later), nicht in Airtable.
+7. **`PATCH`, nicht `PUT`.** PATCH lässt die übrigen Felder des Menschen stehen; PUT löscht sie.
 
-To reuse the *pattern* against your own roadmap rather than the original base: create the
-table with the fields above (or run `get_schema()` against this base to copy the exact
-field/option definitions), then set `AIRTABLE_BASE_ID` / `AIRTABLE_TABLE_NAME` in `.env`.
-Nothing else changes.
+## Abnahme
 
----
-
-## Acceptance criteria
-
-`reference/smoke_test.py` checks the spec's acceptance list (§11 of the requirements spec):
-health, schema shape, the unprocessed-queue filter, full paginated read, lane-from-score,
-and an optional create→update→verify→delete cycle. A correct rebuild passes all of them.
-
----
-
-## Provenance
-
-The two specs cite source files (`02_Resources/context/*.md`, `.claude/skills/*`, etc.) from
-the **original** PM_Workflow repo for traceability; those relative paths resolve there, not
-inside this handover folder. The schema and field options were captured live from the base's
-metadata API, not guessed.
+Die Kriterien stehen in [`eval.md`](eval.md). Ausführbar sind sie als Tests: `reference/test_airtable_client.py` (offline) und `reference/smoke_test.py` (live). Alles grün = fertig.
