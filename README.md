@@ -16,29 +16,31 @@ Du musst nicht programmieren. Das meiste macht Claude; du dirigierst, prüfst ab
 
 Der Kurs (`/kurs`) führt dich in **8 Schritten** durch alles — auch wie du dir einen Airtable-Token besorgst (Schritt 3) und sicher hinterlegst.
 
+Du musst **nichts** installieren oder tippen: Claude richtet die Umgebung ein, schreibt die Tests und führt sie aus. Das **Einzige**, was nur du tun kannst, ist den Token zu erstellen und in `.env` einzutragen.
+
 ## Voraussetzungen
 
 - **Claude Code**
 - **Python 3** (`python3 --version`)
 - Für den Live-Teil: ein **Airtable-Account** + ein **Personal Access Token (PAT)**. Ohne Token kommst du trotzdem durch die ersten Schritte — die Offline-Tests brauchen kein Airtable.
 
-## Schnellstart (5 Minuten)
+## Lieber selbst per Terminal? (optional)
+
+Im Kurs macht Claude das alles für dich — die folgenden Befehle brauchst du **nicht**. Nur falls du die fertige Beispiel-Lösung in `reference/` direkt selbst ausführen willst:
+
+<details>
+<summary>Befehle anzeigen</summary>
 
 ```bash
-cp .env.example .env     # dann .env öffnen und deinen AIRTABLE_PAT eintragen
-                         # (Kurs Schritt 3 erklärt, wie du den Token bekommst)
-
+cp .env.example .env     # PAT eintragen (Kurs Schritt 3 erklärt, wie du ihn bekommst)
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r reference/requirements.txt pytest
 
-# Offline-Tests (kein Airtable, kein Token nötig):
-pytest reference/ -q
-
-# Live-Check gegen deine echte Base (nur lesen):
-python reference/smoke_test.py
-# inkl. einmal anlegen → prüfen → löschen (selbst-aufräumend):
-python reference/smoke_test.py --write-cycle
+pytest reference/ -q                          # Offline-Tests (kein Airtable, kein Token nötig)
+python reference/smoke_test.py                # Live-Check gegen deine Base (nur lesen)
+python reference/smoke_test.py --write-cycle  # inkl. anlegen → prüfen → löschen
 ```
+</details>
 
 ## Was drin ist
 
