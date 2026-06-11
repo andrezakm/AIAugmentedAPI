@@ -56,22 +56,38 @@ Sag **„weiter"** für Schritt 3.
 
 ---
 
-## Schritt 3: Dein Zugangs-Schlüssel (das Einzige, was nur du kannst) 🔑
+## Schritt 3: Deine Base und dein Zugangs-Schlüssel (das machst nur du) 🔑
 
-Damit ein Programm auf dein Airtable darf, braucht es einen **Schlüssel**. Drei Begriffe, einfach erklärt:
+Zwei Dinge richtest **nur du** ein: eine **leere** Airtable-Base und einen Schlüssel dafür. Die Tabelle darin baut **Claude** später für dich (Schritt 6) — du musst kein einziges Feld von Hand anlegen.
 
-- **PAT (Personal Access Token)** — ein **Passwort nur für Programme**. Damit darf ein Skript in deinem Namen auf Airtable zugreifen. Vorteil: du kannst es jederzeit **einzeln zurückziehen**, ohne dein echtes Passwort zu ändern. Es beginnt mit `pat…`. **Das ist das Geheimnis.**
-- **Base-ID** — deine Airtable-**„Base"** ist deine Datenbank (eine Sammlung von Tabellen). Die Base-ID ist ihre Adresse. Du findest sie in der **URL**, wenn die Base offen ist: `airtable.com/`**`appXXXXXXXX`**`/…` — der Teil, der mit `app` anfängt. **Kein Geheimnis.**
-- **Table-Name** — der **Name der Tabelle** (der Reiter oben in Airtable), z. B. `Roadmap`. **Kein Geheimnis.**
+### a) Leg eine leere Base an und finde ihre Base-ID
+
+1. Geh auf **airtable.com** → **„+ Create" / „Add a base" → „Start from scratch"**. Eine leere Base erscheint (der kostenlose Plan reicht).
+2. **Base-ID finden:** Sie steht in der **Adresszeile deines Browsers**, wenn die Base offen ist:
+   ```
+   https://airtable.com/appAbCdEf1234567/tblXXXX/viwYYYY
+                        └──────┬────────┘
+                          die Base-ID
+   ```
+   Es ist der **erste Teil nach `airtable.com/`**, beginnt mit **`app`** und ist 17 Zeichen lang. Kopier **nur** diesen `app…`-Block — bis zum nächsten `/`, also **ohne** das `tbl…`/`viw…` dahinter.
+   *(Siehst du sie nicht? **Help (?) → API documentation** öffnen — ganz oben steht „The ID of this base is `app…`".)*
+
+### b) Erstelle deinen Token (PAT)
+
+Drei Begriffe, einfach erklärt:
+
+- **PAT (Personal Access Token)** — ein **Passwort nur für Programme**. Damit darf ein Skript in deinem Namen auf Airtable zugreifen. Du kannst es jederzeit **einzeln zurückziehen**, ohne dein echtes Passwort zu ändern. Es beginnt mit `pat…`. **Das ist das Geheimnis.**
+- **Base-ID** — die Adresse deiner Base (aus Schritt a, beginnt mit `app…`). **Kein Geheimnis.**
+- **Table-Name** — der Name der Tabelle, hier `Roadmap` (die legt Claude gleich für dich an). **Kein Geheimnis.**
 
 **So erstellst du den PAT — Klick für Klick (ca. 2 Min):**
 1. Geh auf **airtable.com/create/tokens** (eingeloggt).
 2. **„Create new token"** → gib ihm einen Namen, z. B. „Kurs API".
-3. Bei **Scopes** diese drei hinzufügen: `data.records:read`, `data.records:write`, `schema.bases:read`. *(Scopes = was der Schlüssel darf. Wir geben so wenig wie möglich.)*
-4. Bei **Access** deine Base hinzufügen (genau die eine).
+3. Bei **Scopes** **vier** hinzufügen: `data.records:read`, `data.records:write`, `schema.bases:read`, **`schema.bases:write`**. *(Der letzte erlaubt Claude, die Tabelle für dich anzulegen — sonst geben wir so wenig wie nötig.)*
+4. Bei **Access** deine **leere** Base hinzufügen (genau die eine).
 5. **„Create token"** → der Token wird **einmal** angezeigt. **Kopier ihn sofort** (du siehst ihn nie wieder).
 
-Halt den Token kurz fest — gleich kommt er an einen sicheren Ort. **Zeig ihn niemandem, poste ihn nirgends.**
+Halt Token und Base-ID kurz fest. **Zeig den Token niemandem, poste ihn nirgends.**
 
 **Reflexion:** Warum ist ein „Passwort nur für Programme, das man einzeln zurückziehen kann" sicherer, als dem Skript dein echtes Passwort zu geben?
 
@@ -86,7 +102,7 @@ Der Schlüssel kommt jetzt an **einen** Ort — eine Datei namens `.env` —, de
 🟦 **Claude macht das für dich:**
 > ⌨️ **Kopier das an Claude:** „Richte den Arbeitsplatz ein: kopiere `.env.example` zu `.env`, stell sicher dass die `.env` geschützt ist und nicht aus Versehen geteilt wird, und richte die Python-Umgebung ein."
 
-🔑 **Nur du:** Öffne danach die Datei `.env`, ersetze den Platzhalter hinter `AIRTABLE_PAT=` durch deinen echten Token, und trag bei `AIRTABLE_BASE_ID` deine Base-ID ein. *(Claude fasst dein Geheimnis nicht an — das machst du selbst.)*
+🔑 **Nur du:** Öffne danach die Datei `.env`, ersetze den Platzhalter hinter `AIRTABLE_PAT=` durch deinen echten Token, und trag bei `AIRTABLE_BASE_ID` deine Base-ID aus Schritt 3 ein (`AIRTABLE_TABLE_NAME=Roadmap` stimmt schon). *(Claude fasst dein Geheimnis nicht an — das machst du selbst.)*
 
 > **🔒 Die eine Sicherheitsregel, die zählt:**
 > - Der Token gehört **nur** in `.env`. Diese Datei wird **nie** geteilt, **nie** öffentlich hochgeladen.
@@ -124,8 +140,13 @@ Sag **„weiter"** für Schritt 6.
 
 Die Prüfungen bis jetzt liefen **ohne** Airtable (sie testen die Logik). Jetzt der Beweis gegen die **echte** Tabelle.
 
-🟦 **Claude macht das:**
-> ⌨️ **Kopier das an Claude:** „Führ den Live-Test gegen meine echte Base aus (erst nur lesen), und danach einmal mit `--write-cycle`."
+🟦 **Claude macht das — in zwei Mini-Schritten:**
+
+**1) Deine leere Base bekommt die Tabelle.** Claude legt die `Roadmap`-Tabelle mit den 8 Feldern an — ein API-Call, genau dafür war der Scope `schema.bases:write`:
+> ⌨️ **Kopier das an Claude:** „Richte meine Airtable-Tabelle ein: führ `reference/setup_base.py` aus."
+
+**2) Der Live-Test.**
+> ⌨️ **Kopier das an Claude:** „Führ `reference/smoke_test.py` gegen meine Base aus — erst nur lesen, danach mit `--write-cycle`."
 
 Du siehst eine Liste mit **Häkchen** ✅: Verbindung steht, alle 8 Felder da, und ein Test-Eintrag wird angelegt, korrekt bewertet und wieder gelöscht. Am Ende eine **Scorecard** mit PASS/FAIL je Kriterium. **Wenn das grün ist, hast du Zugriff.** 🎉
 

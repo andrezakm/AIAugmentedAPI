@@ -21,7 +21,7 @@ Das **Einzige**, was nur du tun kannst: dir einen Airtable-Token erstellen und e
 ## Was du brauchst
 
 - **Claude Code** (das hier).
-- Einen **Airtable-Account** (kostenlos).
+- Einen **Airtable-Account** (kostenlos) und darin eine **leere Base**. Die `Roadmap`-Tabelle baut Claude im Kurs für dich an — der Kurs (Schritt 3) führt dich durch Base + Token (du brauchst dafür den Scope `schema.bases:write`).
 
 Mehr nicht. Python und alles Weitere richtet Claude im Kurs für dich ein.
 
@@ -75,6 +75,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r reference/requirements.txt pytest
 
 pytest reference/ -q                          # Offline-Tests (kein Airtable, kein Token nötig)
+python reference/setup_base.py                # legt die Roadmap-Tabelle in deiner leeren Base an
 python reference/smoke_test.py                # Live-Check gegen deine Base (nur lesen)
 python reference/smoke_test.py --write-cycle  # inkl. anlegen → prüfen → löschen
 ```

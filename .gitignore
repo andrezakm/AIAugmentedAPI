@@ -1,6 +1,7 @@
-# Secrets — NIEMALS committen
-.env
-**/.env
+# Secrets — NIEMALS committen (.env, ".env Kopie", .env.bak, .env.local …)
+.env*
+**/.env*
+!.env.example
 *.pat
 
 # Python venv & Caches
