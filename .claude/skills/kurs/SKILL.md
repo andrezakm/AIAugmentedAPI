@@ -72,7 +72,7 @@ Zwei Dinge richtest **nur du** ein: eine **leere** Airtable-Base und einen Schl�
    Es ist der **erste Teil nach `airtable.com/`**, beginnt mit **`app`** und ist 17 Zeichen lang. Kopier **nur** diesen `app…`-Block — bis zum nächsten `/`, also **ohne** das `tbl…`/`viw…` dahinter.
    *(Siehst du sie nicht? **Help (?) → API documentation** öffnen — ganz oben steht „The ID of this base is `app…`".)*
 
-> **Und die Tabelle?** Deine neue Base bringt eine leere Standard-Tabelle **„Table 1"** mit — **lass sie einfach in Ruhe** (nicht umbenennen). Die richtige Tabelle heißt **`Roadmap`** und legt **Claude** gleich für dich an (Schritt 6) — du musst keine Tabelle anlegen oder benennen. „Table 1" kannst du am Ende löschen, wenn du aufräumen willst.
+> **Und die Tabelle?** Deine neue Base bringt eine Standard-Tabelle **„Table 1"** mit — **lass sie in Ruhe** (nicht umbenennen). Die Tabelle, um die es geht, heißt **`Roadmap`**: ihr Name steht gleich in deiner `.env` (`AIRTABLE_TABLE_NAME=Roadmap`, Schritt 4), und **Claude legt sie unter genau diesem Namen für dich an** (Schritt 6). Du tippst also nirgends selbst einen Tabellennamen — er ist schon richtig gesetzt. „Table 1" kannst du am Ende löschen.
 
 ### b) Erstelle deinen Token (PAT)
 
@@ -104,7 +104,7 @@ Der Schlüssel kommt jetzt an **einen** Ort — eine Datei namens `.env` —, de
 🟦 **Claude macht das für dich:**
 > ⌨️ **Kopier das an Claude:** „Richte den Arbeitsplatz ein: kopiere `.env.example` zu `.env`, stell sicher dass die `.env` geschützt ist und nicht aus Versehen geteilt wird, und richte die Python-Umgebung ein."
 
-🔑 **Nur du:** Öffne danach die Datei `.env`, ersetze den Platzhalter hinter `AIRTABLE_PAT=` durch deinen echten Token, und trag bei `AIRTABLE_BASE_ID` deine Base-ID aus Schritt 3 ein (`AIRTABLE_TABLE_NAME=Roadmap` stimmt schon). *(Claude fasst dein Geheimnis nicht an — das machst du selbst.)*
+🔑 **Nur du:** Öffne danach die Datei `.env` und füll **zwei** Werte aus: hinter `AIRTABLE_PAT=` deinen echten Token, bei `AIRTABLE_BASE_ID=` deine Base-ID aus Schritt 3. Der dritte Wert **`AIRTABLE_TABLE_NAME=Roadmap` steht schon richtig** — das ist der Tabellenname, den Claude anlegt; lass ihn so. *(Claude fasst dein Geheimnis nicht an — das machst du selbst.)*
 
 > **🔒 Die eine Sicherheitsregel, die zählt:**
 > - Der Token gehört **nur** in `.env`. Diese Datei wird **nie** geteilt, **nie** öffentlich hochgeladen.
