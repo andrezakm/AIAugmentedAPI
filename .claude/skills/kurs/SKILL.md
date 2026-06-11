@@ -62,7 +62,8 @@ Zwei Dinge richtest **nur du** ein: eine **leere** Airtable-Base und einen Schl�
 
 ### a) Leg eine leere Base an und finde ihre Base-ID
 
-1. Geh auf **airtable.com** → **„+ Create" / „Add a base" → „Start from scratch"**. Eine leere Base erscheint (der kostenlose Plan reicht).
+1. Öffne **airtable.com** (Seite **„Start"**). Klick auf **„+ Create" / „Erstellen"** (oder das **`+`** neben **„Workspaces"** links). Im Dialog **„Wie möchten Sie beginnen?"** (engl. „How do you want to start?") wähle **„Selbst eine App bauen"** (engl. „Build an app yourself" — die **leere** Variante). **Nicht** „App mit Omni erstellen" (das ist der KI-Baukasten, brauchst du nicht). Es öffnet sich eine leere Base mit der Tabelle „Table 1". *(Free-Plan reicht; Workspace egal.)*
+   > **Sprach-Hinweis:** Airtable nennt eine **Base** in der Oberfläche inzwischen **„App"** — gemeint ist dasselbe. In `.env` und im Kurs bleibt es **Base** bzw. **`AIRTABLE_BASE_ID`**.
 2. **Base-ID finden:** Sie steht in der **Adresszeile deines Browsers**, wenn die Base offen ist:
    ```
    https://airtable.com/appAbCdEf1234567/tblXXXX/viwYYYY
@@ -70,7 +71,7 @@ Zwei Dinge richtest **nur du** ein: eine **leere** Airtable-Base und einen Schl�
                           die Base-ID
    ```
    Der **erste Teil nach `airtable.com/`**, beginnt mit **`app`**, 17 Zeichen lang. Kopier **nur** diesen `app…`-Block — bis zum nächsten `/`, also **ohne** das `tbl…`/`viw…` dahinter.
-   *(Siehst du sie nicht? **Help (?) → API documentation** öffnen — ganz oben steht „The ID of this base is `app…`".)*
+   *(Siehst du sie nicht? Öffne **Hilfe / Help (?) → API-Dokumentation** — ganz oben steht „The ID of this base is `app…`".)*
 
 > **Die Tabelle heißt `Roadmap` — du legst sie nicht selbst an.** In Airtable lässt du alles, wie es ist (die mitgelieferte „Table 1" ignorierst du oder löschst sie). **Claude** legt in Schritt 6 eine Tabelle namens **`Roadmap`** für dich an.
 >
