@@ -115,6 +115,20 @@ Der Schlüssel kommt jetzt an **einen** Ort — eine Datei namens `.env` —, de
 > - **Base-ID und Table-Name sind kein Geheimnis** — nur der Token.
 > - **Nie** den Token in den Chat kopieren, nie in eine andere Datei, nie posten. Wird er doch mal sichtbar: auf airtable.com einfach **neuen erstellen, alten zurückziehen** — fertig.
 
+> **🔒 Noch sicherer (optional): den Token als echte Umgebungsvariable**
+>
+> Die `.env`-Datei ist bequem und für den Kurs völlig okay — aber sie ist **eine Datei mit deinem Geheimnis, die in deinem Projekt liegt.** Genau das kann schiefgehen: versehentlich mit-committen, beim Zippen/Verschicken des Ordners mitschicken, in eine Cloud-Sync oder ein Backup geraten. *(Stichwort „`.env Kopie`" — so ein Unfall passiert schnell.)*
+>
+> **Wer's sicherer mag:** Setz den Token als **Umgebungsvariable in der Shell** — dann liegt das Geheimnis **gar nicht** im Projektordner:
+> - Nur für diese Terminal-Sitzung: `export AIRTABLE_PAT="pat…"` *(weg beim Schließen des Terminals — gut für einen einmaligen Lauf)*.
+> - Dauerhaft: dieselbe Zeile in deine Shell-Datei `~/.zshrc` (macOS) schreiben — wird in jedem neuen Terminal geladen.
+>
+> Der Code merkt keinen Unterschied — er liest den Token mit `os.getenv("AIRTABLE_PAT")`, egal ob aus `.env` oder echter Variable. *(Ist beides gesetzt, gewinnt die echte Variable.)*
+>
+> **Was ist daran sicherer?** Das Geheimnis ist **keine Datei in deinem Projekt** mehr. Damit fallen die häufigsten Leck-Wege weg — kein versehentliches Committen, Mitschicken, Syncen oder Sichern.
+>
+> **Profi-Stufe (zur Einordnung):** In echten Systemen liegt der Token in einem **Secret-Manager** (macOS-Schlüsselbund, 1Password-CLI, `pass`, Cloud-Secret-Manager). Der hält ihn **verschlüsselt** und reicht ihn nur bei Bedarf als Umgebungsvariable durch — so steht er **nirgends** im Klartext.
+
 **Reflexion:** Es gibt genau ein Geheimnis hier — den Token. Wo darf es liegen, wo nie?
 
 Sag **„weiter"** für Schritt 5.
